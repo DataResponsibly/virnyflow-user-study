@@ -70,7 +70,7 @@ services:
     command: >
       /bin/sh -c "echo 'Waiting 30s before starting task-manager...'; sleep 30; python run_task_manager.py"
 
-  worker1:
+  worker:
     build:
       context: .
       dockerfile: Dockerfile_VirnyFlow
@@ -78,3 +78,5 @@ services:
       - task-manager-network
     command: >
       /bin/sh -c "echo 'Waiting 40s before starting a worker...'; sleep 40; python run_worker.py"
+    deploy:
+      replicas: 2  # This should be the same as an optimisation_args.num_workers parameter in exp_config.yaml
