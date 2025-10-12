@@ -80,3 +80,26 @@ services:
       /bin/sh -c "echo 'Waiting 40s before starting a worker...'; sleep 40; python run_worker.py"
     deploy:
       replicas: 2  # This should be the same as an optimisation_args.num_workers parameter in exp_config.yaml
+
+  virnyflow-interface:
+    build:
+      context: .
+      dockerfile: Dockerfile_Interface
+      args:
+        # override these if you want to point to another Space/branch
+        SPACE_URL: https://huggingface.co/spaces/denys-herasymuk/virnyflow-demo
+        SPACE_BRANCH: main
+    ports:
+      - "7860:7860"   # host:container
+    environment:
+      # Optional: you can pass a custom config file to the app if needed
+      # The app also accepts --exp_config_path; see command below.
+      GRADIO_SERVER_NAME: 0.0.0.0
+      GRADIO_SERVER_PORT: 7860
+    command: >
+      /bin/sh -c "set -a && . ./configs/secrets.env && set +a && sleep 90 && python app.py --exp_config_path ./exp_config.yaml"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(2); s.connect(('localhost', 7860)); print('ok')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
