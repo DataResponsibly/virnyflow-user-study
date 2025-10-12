@@ -69,3 +69,12 @@ services:
       - task-manager-network
     command: >
       /bin/sh -c "echo 'Waiting 30s before starting task-manager...'; sleep 30; python run_task_manager.py"
+
+  worker1:
+    build:
+      context: .
+      dockerfile: Dockerfile_VirnyFlow
+    networks:
+      - task-manager-network
+    command: >
+      /bin/sh -c "echo 'Waiting 40s before starting a worker...'; sleep 40; python run_worker.py"

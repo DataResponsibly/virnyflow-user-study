@@ -9,7 +9,6 @@ if __name__ == "__main__":
     exp_config = create_exp_config_obj(exp_config_yaml_path=exp_config_yaml_path)
 
     task_manager = TaskManager(secrets_path=exp_config.common_args.secrets_path,
-                               # host='127.0.0.1',
                                host='0.0.0.0',
                                port=8000,
                                exp_config=exp_config,

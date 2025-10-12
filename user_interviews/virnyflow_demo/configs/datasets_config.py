@@ -1,5 +1,5 @@
 from virny.datasets import DiabetesDataset2019, ACSEmploymentDataset, ACSPublicCoverageDataset, CardiovascularDiseaseDataset
-from virny_flow_demo.configs.data_loaders import GermanCreditDataset
+from .data_loaders import GermanCreditDataset
 
 SEED = 42
 
