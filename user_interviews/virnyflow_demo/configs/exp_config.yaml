@@ -2,7 +2,7 @@ common_args:
   exp_config_name: "test_debug"
   run_nums: [1]
   save_storage: false
-  secrets_path: "./configs/secrets.env"
+  secrets_path: "./configs/secrets.env"  # do not change this path since it is static for a docker container
 
 pipeline_args:
   dataset: "diabetes"
