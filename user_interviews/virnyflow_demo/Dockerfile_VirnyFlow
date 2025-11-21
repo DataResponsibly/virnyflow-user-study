@@ -13,4 +13,6 @@ RUN pip install --upgrade pip
 
 RUN pip install virny_flow@git+https://github.com/denysgerasymuk799/virny-flow.git
 
+RUN pip install huggingface_hub==0.26.5
+
 COPY ./ /opt/app/
