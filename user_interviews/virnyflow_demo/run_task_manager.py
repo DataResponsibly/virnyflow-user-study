@@ -1,3 +1,6 @@
+# Patch MongoDB client to disable SSL for local connections
+import mongo_patch
+
 import pathlib
 from virny_flow.task_manager import TaskManager
 from virny_flow.core.utils.common_helpers import create_exp_config_obj
