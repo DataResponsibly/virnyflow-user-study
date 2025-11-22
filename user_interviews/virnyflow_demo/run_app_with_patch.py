@@ -21,7 +21,8 @@ if __name__ == "__main__":
     # Change to app directory
     os.chdir('/app')
     
-    # Import app module - this will execute app.py's main code
-    # We need to preserve sys.argv so app.py can parse its arguments
-    import app
-
+    # Execute app.py as a script (preserves __name__ == "__main__" behavior)
+    # This way app.py's main code will execute
+    import runpy
+    print("🚀 Starting app.py...")
+    runpy.run_path('app.py', run_name='__main__')

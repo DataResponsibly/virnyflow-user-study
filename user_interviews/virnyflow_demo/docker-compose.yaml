@@ -59,7 +59,7 @@ services:
       - mongodb_data:/data/db
     networks:
       - task-manager-network
-    command: mongod --bind_ip_all --sslMode disabled
+    command: mongod --bind_ip_all --sslMode disabled --replSet rs0
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -79,6 +79,29 @@ services:
       echo 'Waiting for MongoDB to be ready...'
       until mongosh --host mongodb:27017 --eval 'db.adminCommand(\"ping\")' >/dev/null 2>&1; do
         echo 'Waiting for mongodb:27017...'
+        sleep 2
+      done
+
+      echo 'Initializing replica set...'
+      mongosh --host mongodb:27017 --eval '
+        try {
+          rs.status()
+          print(\"Replica set already initialized\")
+        } catch (e) {
+          print(\"Initializing replica set...\")
+          rs.initiate({
+            _id: \"rs0\",
+            members: [
+              { _id: 0, host: \"mongodb:27017\" }
+            ]
+          })
+          print(\"Replica set initialized successfully\")
+        }
+      '
+
+      echo 'Waiting for replica set to be ready...'
+      until mongosh --host mongodb:27017 --eval 'rs.status().ok' | grep -q 1; do
+        echo 'Waiting for replica set...'
         sleep 2
       done
 
@@ -164,7 +187,7 @@ services:
       - ./mongo_patch.py:/app/mongo_patch.py
       - ./run_app_with_patch.py:/app/run_app_with_patch.py
     command: >
-      /bin/sh -c "set -a && . ./configs/secrets.env && set +a && sleep 90 && python run_app_with_patch.py --exp_config_path ./exp_config.yaml"
+      /bin/sh -c "set -a && . ./configs/secrets.env && set +a && sleep 120 && python run_app_with_patch.py --exp_config_path ./exp_config.yaml"
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(2); s.connect(('localhost', 7860)); print('ok')"]
       interval: 10s
