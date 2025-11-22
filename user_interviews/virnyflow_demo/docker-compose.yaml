@@ -4,6 +4,12 @@ networks:
   task-manager-network:
     driver: bridge
 
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
+
 services:
   zookeeper:
     image: bitnamilegacy/zookeeper:3.8.4-debian-12-r9
@@ -111,9 +117,3 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-volumes:
-  zookeeper_data:
-    driver: local
-  kafka_data:
-    driver: local
