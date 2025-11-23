@@ -3,6 +3,7 @@
 .DS_Store
 .ipynb_checkpoints
 .idea
+!virnyflow_task/configs/secrets.env
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

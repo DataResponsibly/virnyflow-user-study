@@ -1,0 +1,216 @@
+version: '3'
+
+networks:
+  task-manager-network:
+    driver: bridge
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
+  mongodb_data:
+    driver: local
+
+services:
+  zookeeper:
+    image: bitnamilegacy/zookeeper:3.8.4-debian-12-r9
+    container_name: zookeeper
+    logging:
+      driver: "none" # Disable logs
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOO_LOG_LEVEL=ERROR # Disable logs
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/bitnami/zookeeper
+    networks:
+      - task-manager-network
+    # Comment out the following line if you want to see the logs
+    entrypoint: ["/bin/sh", "-c", "exec /opt/bitnami/scripts/zookeeper/entrypoint.sh /opt/bitnami/scripts/zookeeper/run.sh >/dev/null 2>&1"]
+
+  kafka_broker:
+    image: bitnamilegacy/kafka:3.3.2-debian-11-r11
+    container_name: kafka_broker
+    logging:
+      driver: "none" # Disable logs
+    environment:
+      - KAFKA_CFG_BROKER_ID=1
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENERS=PLAINTEXT_INTERNAL://0.0.0.0:9092,PLAINTEXT_EXTERNAL://0.0.0.0:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT_INTERNAL://kafka_broker:9092,PLAINTEXT_EXTERNAL://localhost:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT_INTERNAL:PLAINTEXT,PLAINTEXT_EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT_INTERNAL
+      - KAFKA_CFG_GROUP_MIN_SESSION_TIMEOUT_MS=6000
+      - KAFKA_CFG_GROUP_MAX_SESSION_TIMEOUT_MS=600000
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_OFFSETS_TOPIC_NUM_PARTITIONS=1
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_LOG_LEVEL=ERROR # Disable logs
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    depends_on:
+      - zookeeper
+    volumes:
+      - kafka_data:/bitnami/kafka
+    networks:
+      - task-manager-network
+    # Comment out the following line if you want to see the logs
+    entrypoint: ["/bin/sh", "-c", "exec /opt/bitnami/scripts/kafka/entrypoint.sh /opt/bitnami/scripts/kafka/run.sh >/dev/null 2>&1"]
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongo-node1
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - task-manager-network
+    command: mongod --bind_ip_all --sslMode disabled --replSet rs0 --quiet --logpath /dev/null
+    logging:
+      driver: "none"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  init-mongodb:
+    image: mongo:6.0
+    networks:
+      - task-manager-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    logging:
+      driver: "none"
+    entrypoint: [ "/bin/bash", "-c" ]
+    command: |
+      "
+      echo 'Waiting for MongoDB to be ready...'
+      until mongosh --host mongodb:27017 --eval 'db.adminCommand(\"ping\")' >/dev/null 2>&1; do
+        echo 'Waiting for mongodb:27017...'
+        sleep 2
+      done
+
+      echo 'Initializing replica set...'
+      mongosh --host mongodb:27017 --eval '
+        try {
+          rs.status()
+          print(\"Replica set already initialized\")
+        } catch (e) {
+          print(\"Initializing replica set...\")
+          rs.initiate({
+            _id: \"rs0\",
+            members: [
+              { _id: 0, host: \"mongodb:27017\" }
+            ]
+          })
+          print(\"Replica set initialized successfully\")
+        }
+      '
+
+      echo 'Waiting for replica set to be ready...'
+      until mongosh --host mongodb:27017 --eval 'rs.status().ok' | grep -q 1; do
+        echo 'Waiting for replica set...'
+        sleep 2
+      done
+
+      echo 'Creating virny_flow database...'
+      mongosh --host mongodb:27017 --eval 'use virny_flow; db.createCollection(\"init\"); db.init.insertOne({created: new Date()}); db.init.drop(); print(\"Database virny_flow created successfully\")'
+      "
+
+  init-kafka:
+    image: confluentinc/cp-kafka:6.1.1
+    networks:
+      - task-manager-network
+    depends_on:
+      - kafka_broker
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: |
+      "
+      # wait until the broker is reachable
+      until kafka-topics --bootstrap-server kafka_broker:9092 --list >/dev/null 2>&1; do
+        echo 'Waiting for kafka_broker:9092...'
+        sleep 3
+      done
+
+      echo 'Creating kafka topics (if missing)'
+      kafka-topics --bootstrap-server kafka_broker:9092 --create --if-not-exists --topic NewTasksQueue --replication-factor 1 --partitions 2
+      kafka-topics --bootstrap-server kafka_broker:9092 --create --if-not-exists --topic CompletedTasksQueue --replication-factor 1 --partitions 2
+
+      echo 'Topics present:'
+      kafka-topics --bootstrap-server kafka_broker:9092 --list
+      "
+
+  task-manager:
+    # Use pre-built image from Docker Hub
+    image: denys8herasymuk/virnyflow:v1.0.0
+    # Or build locally (comment out image and uncomment build section)
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfile_VirnyFlow
+    ports:
+      - "8000:8000"
+    networks:
+      - task-manager-network
+    depends_on:
+      - mongodb
+      - init-mongodb
+      - init-kafka
+    volumes:
+      - ./configs:/opt/app/configs
+    environment:
+      - MONGO_SSL=false
+      - MONGO_TLS=false
+    command: >
+      /bin/sh -c "echo 'Waiting for Kafka coordinator to be ready...'; sleep 45; python run_task_manager.py"
+
+  worker:
+    # Use pre-built image from Docker Hub
+    image: denys8herasymuk/virnyflow:v1.0.0
+    # Or build locally (comment out image and uncomment build section)
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfile_VirnyFlow
+    networks:
+      - task-manager-network
+    volumes:
+      - ./configs:/opt/app/configs
+    command: >
+      /bin/sh -c "echo 'Waiting for Kafka coordinator to be ready...'; sleep 45; python run_worker.py"
+    deploy:
+      replicas: 2  # This should be the same as an optimisation_args.num_workers parameter in exp_config.yaml
+
+  virnyflow-interface:
+    # Use pre-built image from Docker Hub
+    image: denys8herasymuk/virnyflow-interface:v1.0.0
+    # Or build locally (comment out image and uncomment build section)
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfile_Interface
+    #  args:
+    #    # override these if you want to point to another Space/branch
+    #    SPACE_URL: https://huggingface.co/spaces/denys-herasymuk/virnyflow-demo
+    #    SPACE_BRANCH: main
+    ports:
+      - "7860:7860"   # host:container
+    networks:
+      - task-manager-network
+    environment:
+      # Optional: you can pass a custom config file to the app if needed
+      # The app also accepts --exp_config_path; see command below.
+      GRADIO_SERVER_NAME: 0.0.0.0
+      GRADIO_SERVER_PORT: 7860
+    volumes:
+      - ./configs:/app/configs
+    command: >
+      /bin/sh -c "set -a && . ./configs/secrets.env && set +a && sleep 120 && python run_app_with_patch.py --exp_config_path ./configs/exp_config.yaml"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(2); s.connect(('localhost', 7860)); print('ok')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

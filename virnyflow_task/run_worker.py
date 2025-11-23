@@ -6,6 +6,9 @@ import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
 
+# Patch MongoDB client to disable SSL for local connections
+import mongo_patch
+
 from virny_flow.core.utils.common_helpers import create_exp_config_obj
 from virny_flow.user_interfaces.worker_interface import worker_interface
 from virny_flow.configs.component_configs import (NULL_IMPUTATION_CONFIG, FAIRNESS_INTERVENTION_CONFIG_SPACE,
