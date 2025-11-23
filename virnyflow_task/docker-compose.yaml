@@ -208,7 +208,7 @@ services:
     volumes:
       - ./configs:/app/configs
     command: >
-      /bin/sh -c "set -a && . ./configs/secrets.env && set +a && sleep 90 && python run_app_with_patch.py --exp_config_path ./configs/exp_config.yaml"
+      /bin/sh -c "set -a && . ./configs/secrets.env && set +a && sleep 120 && python run_app_with_patch.py --exp_config_path ./configs/exp_config.yaml"
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(2); s.connect(('localhost', 7860)); print('ok')"]
       interval: 10s
