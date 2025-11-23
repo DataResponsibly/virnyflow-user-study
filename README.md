@@ -1,4 +1,4 @@
-# virnyflow-user-study
+# Virnyflow User Study
 
 ## How to start the VirnyFlow task
 
