@@ -1,6 +1,7 @@
-FROM python:3.9-slim
+# Build stage - installs packages that need compilation
+FROM python:3.9-slim AS builder
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     libgomp1 \
     gcc \
@@ -9,10 +10,25 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /opt/app/
 
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip --no-cache-dir
 
-RUN pip install virny_flow@git+https://github.com/denysgerasymuk799/virny-flow.git
+RUN pip install --no-cache-dir \
+    virny_flow@git+https://github.com/denysgerasymuk799/virny-flow.git \
+    huggingface_hub==0.26.5
 
-RUN pip install huggingface_hub==0.26.5
+# Runtime stage - minimal image with only runtime dependencies
+FROM python:3.9-slim
+
+# Copy Python packages from builder
+COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Install only runtime system dependencies (no build tools)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+WORKDIR /opt/app/
 
 COPY ./ /opt/app/
