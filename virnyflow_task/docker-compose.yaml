@@ -15,6 +15,7 @@ volumes:
 services:
   zookeeper:
     image: bitnamilegacy/zookeeper:3.8.4-debian-12-r9
+    platform: linux/amd64  # Ensures compatibility across platforms
     container_name: zookeeper
     logging:
       driver: "none" # Disable logs
@@ -32,6 +33,7 @@ services:
 
   kafka_broker:
     image: bitnamilegacy/kafka:3.3.2-debian-11-r11
+    platform: linux/amd64  # Ensures compatibility across platforms
     container_name: kafka_broker
     logging:
       driver: "none" # Disable logs
@@ -62,6 +64,7 @@ services:
 
   mongodb:
     image: mongo:6.0
+    platform: linux/amd64  # Ensures compatibility across platforms
     container_name: mongo-node1
     ports:
       - "27017:27017"
@@ -80,6 +83,7 @@ services:
 
   init-mongodb:
     image: mongo:6.0
+    platform: linux/amd64  # Ensures compatibility across platforms
     networks:
       - task-manager-network
     depends_on:
@@ -125,6 +129,7 @@ services:
 
   init-kafka:
     image: confluentinc/cp-kafka:6.1.1
+    platform: linux/amd64  # Ensures compatibility across platforms
     networks:
       - task-manager-network
     depends_on:
@@ -148,11 +153,13 @@ services:
 
   task-manager:
     # Use pre-built image from Docker Hub
-    image: denys8herasymuk/virnyflow:v1.0.0
+    image: denys8herasymuk/virnyflow:v1.1.0
+    platform: linux/amd64  # Ensures compatibility across Mac, Ubuntu, and Windows
     # Or build locally (comment out image and uncomment build section)
     #build:
     #  context: .
     #  dockerfile: Dockerfile_VirnyFlow
+    #  platform: linux/amd64
     ports:
       - "8000:8000"
     networks:
@@ -171,11 +178,13 @@ services:
 
   worker:
     # Use pre-built image from Docker Hub
-    image: denys8herasymuk/virnyflow:v1.0.0
+    image: denys8herasymuk/virnyflow:v1.1.0
+    platform: linux/amd64  # Ensures compatibility across Mac, Ubuntu, and Windows
     # Or build locally (comment out image and uncomment build section)
     #build:
     #  context: .
     #  dockerfile: Dockerfile_VirnyFlow
+    #  platform: linux/amd64
     networks:
       - task-manager-network
     volumes:
@@ -187,11 +196,13 @@ services:
 
   virnyflow-interface:
     # Use pre-built image from Docker Hub
-    image: denys8herasymuk/virnyflow-interface:v1.0.0
+    image: denys8herasymuk/virnyflow-interface:v1.1.0
+    platform: linux/amd64  # Ensures compatibility across Mac, Ubuntu, and Windows
     # Or build locally (comment out image and uncomment build section)
     #build:
     #  context: .
     #  dockerfile: Dockerfile_Interface
+    #  platform: linux/amd64
     #  args:
     #    # override these if you want to point to another Space/branch
     #    SPACE_URL: https://huggingface.co/spaces/denys-herasymuk/virnyflow-demo

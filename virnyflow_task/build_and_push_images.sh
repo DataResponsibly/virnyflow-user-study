@@ -19,32 +19,38 @@ echo "Docker Hub Username: $DOCKERHUB_USERNAME"
 echo "Version Tag: $VERSION_TAG"
 echo ""
 
-# Build VirnyFlow image (used by task-manager and worker)
-echo "📦 Building virnyflow image..."
-docker build -f Dockerfile_VirnyFlow -t ${DOCKERHUB_USERNAME}/virnyflow:${VERSION_TAG} .
-docker tag ${DOCKERHUB_USERNAME}/virnyflow:${VERSION_TAG} ${DOCKERHUB_USERNAME}/virnyflow:latest
+# Ensure buildx is available and create a builder if needed
+echo "🔧 Setting up Docker buildx for multi-platform builds..."
+docker buildx create --use --name multiarch-builder 2>/dev/null || docker buildx use multiarch-builder
 
-# Build Interface image
-echo "📦 Building virnyflow-interface image..."
-docker build \
+# Build VirnyFlow image (used by task-manager and worker) - multi-platform
+echo "📦 Building virnyflow image for multiple platforms (linux/amd64, linux/arm64)..."
+docker buildx build \
+    --platform linux/amd64,linux/arm64 \
+    -f Dockerfile_VirnyFlow \
+    -t ${DOCKERHUB_USERNAME}/virnyflow:${VERSION_TAG} \
+    -t ${DOCKERHUB_USERNAME}/virnyflow:latest \
+    --push \
+    .
+
+# Build Interface image - multi-platform
+echo "📦 Building virnyflow-interface image for multiple platforms (linux/amd64, linux/arm64)..."
+docker buildx build \
+    --platform linux/amd64,linux/arm64 \
     --build-arg SPACE_URL=https://huggingface.co/spaces/denys-herasymuk/virnyflow-demo \
     --build-arg SPACE_BRANCH=main \
     -f Dockerfile_Interface \
-    -t ${DOCKERHUB_USERNAME}/virnyflow-interface:${VERSION_TAG} .
-docker tag ${DOCKERHUB_USERNAME}/virnyflow-interface:${VERSION_TAG} ${DOCKERHUB_USERNAME}/virnyflow-interface:latest
+    -t ${DOCKERHUB_USERNAME}/virnyflow-interface:${VERSION_TAG} \
+    -t ${DOCKERHUB_USERNAME}/virnyflow-interface:latest \
+    --push \
+    .
 
-# Login to Docker Hub
+# Login to Docker Hub (needed before buildx push)
 echo "🔐 Logging in to Docker Hub..."
 docker login
 
-# Push images
-echo "🚀 Pushing virnyflow:${VERSION_TAG}..."
-docker push ${DOCKERHUB_USERNAME}/virnyflow:${VERSION_TAG}
-docker push ${DOCKERHUB_USERNAME}/virnyflow:latest
-
-echo "🚀 Pushing virnyflow-interface:${VERSION_TAG}..."
-docker push ${DOCKERHUB_USERNAME}/virnyflow-interface:${VERSION_TAG}
-docker push ${DOCKERHUB_USERNAME}/virnyflow-interface:latest
+# Note: Images are already pushed during buildx build with --push flag above
+echo "✅ Images have been built and pushed for multiple platforms!"
 
 echo ""
 echo "✅ Successfully built and pushed images!"
