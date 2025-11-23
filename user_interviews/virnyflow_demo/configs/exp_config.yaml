@@ -20,7 +20,7 @@ optimisation_args:
     surrogate_type: 'auto'
     acq_type: 'auto'
     acq_optimizer_type: 'auto'
-  max_total_pipelines_num: 10  # or we can use max_time_budget to set an execution budget in seconds
+  max_total_pipelines_num: 30  # or we can use max_time_budget to set an execution budget in seconds
   num_workers: 2
   num_pp_candidates: 2  # set also in docker-compose.yaml
   training_set_fractions_for_halting: [0.5, 1.0]

@@ -16,18 +16,25 @@ services:
   zookeeper:
     image: bitnamilegacy/zookeeper:3.8.4-debian-12-r9
     container_name: zookeeper
+    logging:
+      driver: "none" # Disable logs
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOO_LOG_LEVEL=ERROR # Disable logs
     ports:
       - "2181:2181"
     volumes:
       - zookeeper_data:/bitnami/zookeeper
     networks:
       - task-manager-network
+    # Comment out the following line if you want to see the logs
+    entrypoint: ["/bin/sh", "-c", "exec /opt/bitnami/scripts/zookeeper/entrypoint.sh /opt/bitnami/scripts/zookeeper/run.sh >/dev/null 2>&1"]
 
   kafka_broker:
     image: bitnamilegacy/kafka:3.3.2-debian-11-r11
     container_name: kafka_broker
+    logging:
+      driver: "none" # Disable logs
     environment:
       - KAFKA_CFG_BROKER_ID=1
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
@@ -40,6 +47,7 @@ services:
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_OFFSETS_TOPIC_NUM_PARTITIONS=1
       - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_LOG_LEVEL=ERROR # Disable logs
     ports:
       - "9092:9092"
       - "9093:9093"
@@ -49,6 +57,8 @@ services:
       - kafka_data:/bitnami/kafka
     networks:
       - task-manager-network
+    # Comment out the following line if you want to see the logs
+    entrypoint: ["/bin/sh", "-c", "exec /opt/bitnami/scripts/kafka/entrypoint.sh /opt/bitnami/scripts/kafka/run.sh >/dev/null 2>&1"]
 
   mongodb:
     image: mongo:6.0
@@ -67,7 +77,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
 
   init-mongodb:
     image: mongo:6.0
@@ -138,9 +147,12 @@ services:
       "
 
   task-manager:
-    build:
-      context: .
-      dockerfile: Dockerfile_VirnyFlow
+    # Use pre-built image from Docker Hub
+    image: denys8herasymuk/virnyflow:latest
+    # Or build locally (comment out image and uncomment build section)
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfile_VirnyFlow
     ports:
       - "8000:8000"
     networks:
@@ -155,29 +167,35 @@ services:
       - MONGO_SSL=false
       - MONGO_TLS=false
     command: >
-      /bin/sh -c "echo 'Waiting for Kafka coordinator to be ready...'; sleep 60; python run_task_manager.py"
+      /bin/sh -c "echo 'Waiting for Kafka coordinator to be ready...'; sleep 45; python run_task_manager.py"
 
   worker:
-    build:
-      context: .
-      dockerfile: Dockerfile_VirnyFlow
+    # Use pre-built image from Docker Hub
+    image: denys8herasymuk/virnyflow:latest
+    # Or build locally (comment out image and uncomment build section)
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfile_VirnyFlow
     networks:
       - task-manager-network
     volumes:
       - ./configs:/opt/app/configs
     command: >
-      /bin/sh -c "echo 'Waiting for Kafka coordinator to be ready...'; sleep 60; python run_worker.py"
+      /bin/sh -c "echo 'Waiting for Kafka coordinator to be ready...'; sleep 45; python run_worker.py"
     deploy:
       replicas: 2  # This should be the same as an optimisation_args.num_workers parameter in exp_config.yaml
 
   virnyflow-interface:
-    build:
-      context: .
-      dockerfile: Dockerfile_Interface
-      args:
-        # override these if you want to point to another Space/branch
-        SPACE_URL: https://huggingface.co/spaces/denys-herasymuk/virnyflow-demo
-        SPACE_BRANCH: main
+    # Use pre-built image from Docker Hub
+    image: denys8herasymuk/virnyflow-interface:latest
+    # Or build locally (comment out image and uncomment build section)
+    #build:
+    #  context: .
+    #  dockerfile: Dockerfile_Interface
+    #  args:
+    #    # override these if you want to point to another Space/branch
+    #    SPACE_URL: https://huggingface.co/spaces/denys-herasymuk/virnyflow-demo
+    #    SPACE_BRANCH: main
     ports:
       - "7860:7860"   # host:container
     networks:
@@ -189,10 +207,8 @@ services:
       GRADIO_SERVER_PORT: 7860
     volumes:
       - ./configs:/app/configs
-      - ./mongo_patch.py:/app/mongo_patch.py
-      - ./run_app_with_patch.py:/app/run_app_with_patch.py
     command: >
-      /bin/sh -c "set -a && . ./configs/secrets.env && set +a && sleep 120 && python run_app_with_patch.py --exp_config_path ./configs/exp_config.yaml"
+      /bin/sh -c "set -a && . ./configs/secrets.env && set +a && sleep 90 && python run_app_with_patch.py --exp_config_path ./configs/exp_config.yaml"
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(2); s.connect(('localhost', 7860)); print('ok')"]
       interval: 10s

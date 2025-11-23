@@ -20,6 +20,8 @@ RUN git clone --depth=1 -b ${SPACE_BRANCH} ${SPACE_URL} .
 # If the Space uses subfolders, keep the dot; otherwise adjust as needed.
 
 COPY ./configs/ /app/configs/
+COPY ./mongo_patch.py /app/mongo_patch.py
+COPY ./run_app_with_patch.py /app/run_app_with_patch.py
 
 # Python deps
 # (Speed up rebuilds: separate requirements layer)
