@@ -19,9 +19,7 @@ WORKDIR /app
 RUN git clone --depth=1 -b ${SPACE_BRANCH} ${SPACE_URL} .
 # If the Space uses subfolders, keep the dot; otherwise adjust as needed.
 
-# Copy the exp_config.yaml and secrets.env after cloning
-COPY ./configs/exp_config.yaml /app/
-COPY ./configs/secrets.env /app/configs/
+COPY ./configs/ /app/configs/
 
 # Python deps
 # (Speed up rebuilds: separate requirements layer)
