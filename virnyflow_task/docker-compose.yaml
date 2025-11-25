@@ -174,10 +174,10 @@ services:
       - MONGO_SSL=false
       - MONGO_TLS=false
     command: >
-      /bin/bash -lc "echo 'Waiting for Kafka coordinator to be ready...'; sleep 45;
+      /bin/bash -lc "set -o pipefail; echo 'Waiting for Kafka coordinator to be ready...'; sleep 45;
       python -u run_task_manager.py 2>&1 |
       { grep --line-buffered -v 'Cannot sample non duplicate configuration after 1000 iterations.' || true; }
-      status=${PIPESTATUS[0]}; exit ${status}"
+      exit $${PIPESTATUS[0]}"
 
   worker:
     # Use pre-built image from Docker Hub
