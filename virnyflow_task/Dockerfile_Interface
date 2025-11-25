@@ -31,22 +31,6 @@ COPY ./run_app_with_patch.py /app/run_app_with_patch.py
 RUN pip install --no-cache-dir --upgrade pip \
  && if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt; fi
 
-# Clean up unnecessary files from Python packages to reduce image size
-RUN find /usr/local/lib/python3.11/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
-    find /usr/local/lib/python3.11/site-packages -type f -name "*.md" ! -path "*/dist-info/*" -delete && \
-    find /usr/local/lib/python3.11/site-packages -type f -name "*.rst" ! -path "*/dist-info/*" -delete && \
-    find /usr/local/lib/python3.11/site-packages -type f -name "LICENSE*" ! -path "*/dist-info/*" -delete && \
-    find /usr/local/lib/python3.11/site-packages -type f -name "CHANGELOG*" ! -path "*/dist-info/*" -delete && \
-    find /usr/local/lib/python3.11/site-packages -type f -name "*.html" -delete && \
-    find /usr/local/lib/python3.11/site-packages -type d -name ".git" -exec rm -rf {} + 2>/dev/null || true
-
-# Clean up application directory
-RUN find /app -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
-    find /app -type d -name ".git" -exec rm -rf {} + 2>/dev/null || true && \
-    find /app -type f -name "*.pyc" -delete && \
-    find /app -type f -name "*.pyo" -delete && \
-    find /app -type f -name "*.md" ! -path "*/configs/*" -delete 2>/dev/null || true
-
 # Runtime stage - minimal image with only runtime dependencies
 FROM python:3.11.9-slim
 
