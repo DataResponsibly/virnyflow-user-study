@@ -17,6 +17,10 @@ RUN pip install --no-cache-dir \
     virny_flow@git+https://github.com/denysgerasymuk799/virny-flow.git \
     huggingface_hub==0.26.5
 
+# Clean up unnecessary files from Python packages to reduce image size
+RUN find /usr/local/lib/python3.9/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
+    find /usr/local/lib/python3.9/site-packages -type d -name ".git" -exec rm -rf {} + 2>/dev/null || true
+
 # Runtime stage - minimal image with only runtime dependencies
 FROM python:3.9-slim
 
