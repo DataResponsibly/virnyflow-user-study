@@ -174,7 +174,14 @@ services:
       - MONGO_SSL=false
       - MONGO_TLS=false
     command: >
-      /bin/bash -lc "set -o pipefail; echo 'Waiting for Kafka coordinator to be ready...'; sleep 60;
+      /bin/bash -lc "set -o pipefail;
+      echo 'Waiting for kafka_broker:9092...';
+      until (echo > /dev/tcp/kafka_broker/9092) >/dev/null 2>&1; do
+        echo 'Still waiting for kafka_broker:9092...';
+        sleep 5;
+      done;
+      echo 'Kafka broker is up, starting task manager.';
+      sleep 20;
       python -u run_task_manager.py 2>&1 |
       { grep --line-buffered -v 'Cannot sample non duplicate configuration after 1000 iterations.' || true; };
       exit $${PIPESTATUS[0]}"
@@ -193,7 +200,14 @@ services:
     volumes:
       - ./configs:/opt/app/configs
     command: >
-      /bin/sh -c "echo 'Waiting for Kafka coordinator to be ready...'; sleep 60; python run_worker.py"
+      /bin/bash -lc "echo 'Waiting for kafka_broker:9092...';
+      until (echo > /dev/tcp/kafka_broker/9092) >/dev/null 2>&1; do
+        echo 'Still waiting for kafka_broker:9092...';
+        sleep 5;
+      done;
+      echo 'Kafka broker is up, starting worker.';
+      sleep 20;
+      python run_worker.py"
     deploy:
       replicas: 2  # This should be the same as an optimisation_args.num_workers parameter in exp_config.yaml
 
