@@ -153,7 +153,7 @@ services:
 
   task-manager:
     # Use pre-built image from Docker Hub
-    image: denys8herasymuk/virnyflow:v1.1.0
+    image: denys8herasymuk/virnyflow:v1.2.0
     platform: linux/amd64  # Ensures compatibility across Mac, Ubuntu, and Windows
     # Or build locally (comment out image and uncomment build section)
     #build:
@@ -178,7 +178,7 @@ services:
 
   worker:
     # Use pre-built image from Docker Hub
-    image: denys8herasymuk/virnyflow:v1.1.0
+    image: denys8herasymuk/virnyflow:v1.2.0
     platform: linux/amd64  # Ensures compatibility across Mac, Ubuntu, and Windows
     # Or build locally (comment out image and uncomment build section)
     #build:
@@ -196,7 +196,7 @@ services:
 
   virnyflow-interface:
     # Use pre-built image from Docker Hub
-    image: denys8herasymuk/virnyflow-interface:v1.1.0
+    image: denys8herasymuk/virnyflow-interface:v1.2.0
     platform: linux/amd64  # Ensures compatibility across Mac, Ubuntu, and Windows
     # Or build locally (comment out image and uncomment build section)
     #build:
