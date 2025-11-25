@@ -24,7 +24,7 @@ echo "📦 Building virnyflow-interface image for linux/amd64 platform..."
 docker build \
     --platform linux/amd64 \
     --progress=plain \
-    --build-arg SPACE_URL=https://huggingface.co/spaces/denys-herasymuk/virnyflow-demo \
+    --build-arg SPACE_URL=https://huggingface.co/spaces/denys-herasymuk/virnyflow-interface \
     --build-arg SPACE_BRANCH=main \
     -f Dockerfile_Interface \
     -t denys8herasymuk/virnyflow-interface:${VERSION_TAG} \
