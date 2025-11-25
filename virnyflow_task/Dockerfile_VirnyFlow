@@ -14,7 +14,7 @@ WORKDIR /opt/app/
 RUN pip install --upgrade pip --no-cache-dir
 
 RUN pip install --no-cache-dir \
-    virny_flow@git+https://github.com/denysgerasymuk799/virny-flow.git \
+    virny_flow@git+https://github.com/denysgerasymuk799/virny-flow.git@virnyflow-user-study \
     huggingface_hub==0.26.5
 
 # Clean up unnecessary files from Python packages to reduce image size
