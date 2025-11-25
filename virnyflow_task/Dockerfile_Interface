@@ -2,7 +2,7 @@
 # Build stage - installs packages that need compilation and clones the Space
 FROM python:3.11.9-slim AS builder
 
-ARG SPACE_URL=https://huggingface.co/spaces/denys-herasymuk/virnyflow-demo
+ARG SPACE_URL=https://huggingface.co/spaces/denys-herasymuk/virnyflow-interface
 ARG SPACE_BRANCH=main
 
 # Basic OS deps (git, git-lfs for some Spaces, build tools for wheels)
