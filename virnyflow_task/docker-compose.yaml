@@ -174,7 +174,10 @@ services:
       - MONGO_SSL=false
       - MONGO_TLS=false
     command: >
-      /bin/sh -c "echo 'Waiting for Kafka coordinator to be ready...'; sleep 45; python run_task_manager.py"
+      /bin/bash -lc "echo 'Waiting for Kafka coordinator to be ready...'; sleep 45;
+      python -u run_task_manager.py 2>&1 |
+      { grep --line-buffered -v 'Cannot sample non duplicate configuration after 1000 iterations.' || true; }
+      status=${PIPESTATUS[0]}; exit ${status}"
 
   worker:
     # Use pre-built image from Docker Hub
@@ -219,7 +222,7 @@ services:
     volumes:
       - ./configs:/app/configs
     command: >
-      /bin/sh -c "set -a && . ./configs/secrets.env && set +a && sleep 120 && python run_app_with_patch.py --exp_config_path ./configs/exp_config.yaml"
+      /bin/sh -c "set -a && . ./configs/secrets.env && set +a && sleep 150 && python run_app_with_patch.py --exp_config_path ./configs/exp_config.yaml"
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(2); s.connect(('localhost', 7860)); print('ok')"]
       interval: 10s
