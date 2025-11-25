@@ -13,7 +13,6 @@ docker build \
     --platform linux/amd64 \
     -f Dockerfile_VirnyFlow \
     -t denys8herasymuk/virnyflow:${VERSION_TAG} \
-    -t denys8herasymuk/virnyflow:latest \
     .
 docker push denys8herasymuk/virnyflow:${VERSION_TAG}
 docker push denys8herasymuk/virnyflow:latest

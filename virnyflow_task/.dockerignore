@@ -46,7 +46,8 @@ htmlcov/
 
 # Docker
 Dockerfile*
-docker-compose*.yaml
+docker-compose-amd.yaml
+docker-compose-arm.yaml
 .dockerignore
 
 # Other
