@@ -11,7 +11,6 @@ export COMPOSE_DOCKER_CLI_BUILD=1
 echo "📦 Building virnyflow image for linux/amd64 platform..."
 docker build \
     --platform linux/amd64 \
-    --progress=plain \
     -f Dockerfile_VirnyFlow \
     -t denys8herasymuk/virnyflow:${VERSION_TAG} \
     -t denys8herasymuk/virnyflow:latest \
@@ -23,7 +22,6 @@ docker push denys8herasymuk/virnyflow:latest
 echo "📦 Building virnyflow-interface image for linux/amd64 platform..."
 docker build \
     --platform linux/amd64 \
-    --progress=plain \
     --build-arg SPACE_URL=https://huggingface.co/spaces/denys-herasymuk/virnyflow-interface \
     --build-arg SPACE_BRANCH=main \
     -f Dockerfile_Interface \
