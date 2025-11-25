@@ -33,17 +33,6 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 # Clean up unnecessary files from Python packages to reduce image size
 RUN find /usr/local/lib/python3.11/site-packages -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
-    find /usr/local/lib/python3.11/site-packages -type d -name "tests" -exec rm -rf {} + 2>/dev/null || true && \
-    find /usr/local/lib/python3.11/site-packages -type d -name "test" -exec rm -rf {} + 2>/dev/null || true && \
-    find /usr/local/lib/python3.11/site-packages -type d -name "testing" -exec rm -rf {} + 2>/dev/null || true && \
-    find /usr/local/lib/python3.11/site-packages -type d -name "docs" -exec rm -rf {} + 2>/dev/null || true && \
-    find /usr/local/lib/python3.11/site-packages -type d -name "doc" -exec rm -rf {} + 2>/dev/null || true && \
-    find /usr/local/lib/python3.11/site-packages -type d -name "examples" -exec rm -rf {} + 2>/dev/null || true && \
-    find /usr/local/lib/python3.11/site-packages -type d -name "example" -exec rm -rf {} + 2>/dev/null || true && \
-    find /usr/local/lib/python3.11/site-packages -type f -name "*.pyc" -delete && \
-    find /usr/local/lib/python3.11/site-packages -type f -name "*.pyo" -delete && \
-    find /usr/local/lib/python3.11/site-packages -type f -name "*.a" -delete && \
-    find /usr/local/lib/python3.11/site-packages -type f -name "*.txt" -path "*/test*" -delete && \
     find /usr/local/lib/python3.11/site-packages -type f -name "*.md" ! -path "*/dist-info/*" -delete && \
     find /usr/local/lib/python3.11/site-packages -type f -name "*.rst" ! -path "*/dist-info/*" -delete && \
     find /usr/local/lib/python3.11/site-packages -type f -name "LICENSE*" ! -path "*/dist-info/*" -delete && \
