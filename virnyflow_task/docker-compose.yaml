@@ -205,7 +205,7 @@ services:
     #  platform: linux/amd64
     #  args:
     #    # override these if you want to point to another Space/branch
-    #    SPACE_URL: https://huggingface.co/spaces/denys-herasymuk/virnyflow-demo
+    #    SPACE_URL: https://huggingface.co/spaces/denys-herasymuk/virnyflow-interface
     #    SPACE_BRANCH: main
     ports:
       - "7860:7860"   # host:container
