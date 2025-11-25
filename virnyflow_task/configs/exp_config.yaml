@@ -14,8 +14,9 @@ pipeline_args:
 optimisation_args:
   ref_point: [0.20, 0.20]
   objectives:
-    - { name: "objective_1", metric: "F1", group: "overall", weight: 0.25 }
-    - { name: "objective_2", metric: "Equalized_Odds_TPR", group: "Gender", weight: 0.75 }
+    - { name: "objective_1", metric: "F1", group: "overall", weight: 0.5 }
+#    - { name: "objective_2", metric: "<FAIRNESS_METRIC>", group: "<SENSITIVE_ATTRIBUTE>", weight: 0.5 }
+    - { name: "objective_2", metric: "Equalized_Odds_TPR", group: "Gender", weight: 0.5 }
   optimizer:
     surrogate_type: 'auto'
     acq_type: 'auto'
@@ -28,4 +29,5 @@ optimisation_args:
   risk_factor: 0.5
 
 virny_args:
+#  sensitive_attributes_dct: {'<SENSITIVE_ATTRIBUTE>': '<DISADVANTAGED_VALUE>'}
   sensitive_attributes_dct: {'Gender': 'Female'}

@@ -19,38 +19,36 @@ echo "Docker Hub Username: $DOCKERHUB_USERNAME"
 echo "Version Tag: $VERSION_TAG"
 echo ""
 
-# Ensure buildx is available and create a builder if needed
-echo "🔧 Setting up Docker buildx for multi-platform builds..."
-docker buildx create --use --name multiarch-builder 2>/dev/null || docker buildx use multiarch-builder
+# Login to Docker Hub (needed before push)
+echo "🔐 Logging in to Docker Hub..."
+docker login
 
-# Build VirnyFlow image (used by task-manager and worker) - multi-platform
-echo "📦 Building virnyflow image for multiple platforms (linux/amd64, linux/arm64)..."
-docker buildx build \
-    --platform linux/amd64,linux/arm64 \
+# Build VirnyFlow image (used by task-manager and worker) - linux/amd64 only
+# This works on Mac (Intel native, Apple Silicon via emulation), Ubuntu, and Windows
+echo "📦 Building virnyflow image for linux/amd64 platform..."
+docker build \
+    --platform linux/amd64 \
     -f Dockerfile_VirnyFlow \
     -t ${DOCKERHUB_USERNAME}/virnyflow:${VERSION_TAG} \
     -t ${DOCKERHUB_USERNAME}/virnyflow:latest \
-    --push \
     .
+docker push ${DOCKERHUB_USERNAME}/virnyflow:${VERSION_TAG}
+docker push ${DOCKERHUB_USERNAME}/virnyflow:latest
 
-# Build Interface image - multi-platform
-echo "📦 Building virnyflow-interface image for multiple platforms (linux/amd64, linux/arm64)..."
-docker buildx build \
-    --platform linux/amd64,linux/arm64 \
+# Build Interface image - linux/amd64 only
+echo "📦 Building virnyflow-interface image for linux/amd64 platform..."
+docker build \
+    --platform linux/amd64 \
     --build-arg SPACE_URL=https://huggingface.co/spaces/denys-herasymuk/virnyflow-demo \
     --build-arg SPACE_BRANCH=main \
     -f Dockerfile_Interface \
     -t ${DOCKERHUB_USERNAME}/virnyflow-interface:${VERSION_TAG} \
     -t ${DOCKERHUB_USERNAME}/virnyflow-interface:latest \
-    --push \
     .
+docker push ${DOCKERHUB_USERNAME}/virnyflow-interface:${VERSION_TAG}
+docker push ${DOCKERHUB_USERNAME}/virnyflow-interface:latest
 
-# Login to Docker Hub (needed before buildx push)
-echo "🔐 Logging in to Docker Hub..."
-docker login
-
-# Note: Images are already pushed during buildx build with --push flag above
-echo "✅ Images have been built and pushed for multiple platforms!"
+echo "✅ Images have been built and pushed for linux/amd64 platform!"
 
 echo ""
 echo "✅ Successfully built and pushed images!"
