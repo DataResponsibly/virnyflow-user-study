@@ -1,5 +1,12 @@
 # VirnyFlow User Study
 
+## VirnyFlow Architecture
+
+<p align="center">
+    <img src="./virnyflow_architecture.png" alt="System Design" width="75%">
+</p>
+
+
 ## How to Start the VirnyFlow Task
 
 VirnyFlow provides separate Docker Compose configurations depending on your machine's processor architecture.
