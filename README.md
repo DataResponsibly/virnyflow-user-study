@@ -37,8 +37,4 @@ docker-compose -f docker-compose-amd.yaml down --volumes
 
 ## VirnyFlow Execution Demo
 
-<p align="center">
-    <a href="https://www.youtube.com/watch?v=odb_FSpjoQE">
-        <img src="https://img.youtube.com/vi/odb_FSpjoQE/maxresdefault.jpg" alt="VirnyFlow Execution Demo" width="75%">
-    </a>
-</p>
+Watch a video demonstration of VirnyFlow in action: [VirnyFlow Execution Demo](https://www.youtube.com/watch?v=odb_FSpjoQE).
